@@ -4,12 +4,20 @@ val Fs2V = "3.7.0"
 val MUnitV = "0.7.29"
 val SourcePosV = "1.1.0"
 
-ThisBuild / description := "sbt project generation"
-ThisBuild / organization := "com.julianpeeters"
-ThisBuild / scalaVersion := "3.4.0-RC1-bin-20231025-8046a8b-NIGHTLY"
-ThisBuild / versionScheme := Some("semver-spec")
-
-lazy val commonSettings = Seq(
+inThisBuild(List(
+  crossScalaVersions := Seq(scalaVersion.value),
+  description := "Library for use with the `dc10-scala` code generator",
+  organization := "com.julianpeeters",
+  homepage := Some(url("https://github.com/julianpeeters/dc10-sbt")),
+  licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
+  developers := List(
+    Developer(
+      "julianpeeters",
+      "Julian Peeters",
+      "julianpeeters@gmail.com",
+      url("http://github.com/julianpeeters")
+    )
+  ),
   scalacOptions ++= Seq(
     "-deprecation",
     "-feature",
@@ -18,19 +26,18 @@ lazy val commonSettings = Seq(
     "-Wunused:all",
     "-Wvalue-discard"
   ),
-  libraryDependencies ++= Seq(
-    "org.scalameta" %% "munit" % MUnitV % Test
-  )
-)
+  scalaVersion := "3.4.0-RC1-bin-20231025-8046a8b-NIGHTLY",
+  versionScheme := Some("semver-spec"),
+))
 
 lazy val `dc10-sbt` = (project in file("."))
   .settings(
-    commonSettings,
     name := "dc10-sbt",
     libraryDependencies ++= Seq(
       "com.julianpeeters" %% "dc10-scala" % Dc10ScalaV,
       "org.tpolecat"      %% "sourcepos"  % SourcePosV,
       "org.typelevel"     %% "cats-core"  % CatsV,
+      "org.scalameta"     %% "munit"      % MUnitV      % Test
     )
   )
 
