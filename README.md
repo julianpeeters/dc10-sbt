@@ -5,7 +5,7 @@ Library for use with the `dc10-scala` code generator.
  - Generates code for Scala 3
 
 ```scala
-"com.julianpeeters" %% "dc10-sbt" % "0.0.0"
+"com.julianpeeters" %% "dc10-sbt" % "0.1.0"
 ```
 
 ### `dc10-sbt`
@@ -20,7 +20,7 @@ val `Main.scala` =
   FILE("Main.scala",
     VAL("hello", STRING, "hello, world")
   )
-// `Main.scala`: IndexedStateT[ErrorF, List[File], List[File], ValueExpr[String, Unit]] = cats.data.IndexedStateT@6a9f8237
+// `Main.scala`: IndexedStateT[ErrorF, List[File], List[File], ValueExpr[String, Unit]] = cats.data.IndexedStateT@15b3cd8f
 
 val snippet = 
   BASEDIR("dc10-example",
@@ -29,7 +29,7 @@ val snippet =
       _ <- BUILDSBT(ROOT("dc10-example", s))
     yield ()
   )
-// snippet: IndexedStateT[ErrorF, List[FileDef], List[FileDef], Unit] = cats.data.IndexedStateT@20e85b4d
+// snippet: IndexedStateT[ErrorF, List[FileDef], List[FileDef], Unit] = cats.data.IndexedStateT@2b43fb00
 ```
 
 Use the `compiler` to render the code:
