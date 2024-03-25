@@ -15,6 +15,8 @@ import org.tpolecat.sourcepos.SourcePos
 trait Build[F[_], G[_], H[_]]:
   def BASEDIR[A](nme: String, files: F[A])(using sp: SourcePos): F[A]
   def BUILDSBT[A](projects: G[A])(using sp: SourcePos): F[A]
+  def LICENSE(contents: String)(using sp: SourcePos): F[FileDef]
+  def README(contents: String)(using sp: SourcePos): F[FileDef]
   def SRC[A](packages: H[A])(using sp: SourcePos): F[FileDef]
   
 object Build:
@@ -41,7 +43,19 @@ object Build:
         f <- StateT.pure[ErrorF, List[FileDef], FileDef](FileDef.SbtFile(Path.of(s"build.sbt"), ms))
         _ <- StateT.modifyF[ErrorF, List[FileDef]](ctx => ctx.ext(f))
       yield a
-  
+
+    def LICENSE(contents: String)(using sp: SourcePos): StateT[ErrorF, List[FileDef], FileDef] =
+      for
+        f <- StateT.pure[ErrorF, List[FileDef], FileDef](FileDef.License(Path.of("LICENSE"), contents))
+        _ <- StateT.modifyF[ErrorF, List[FileDef]](ctx => ctx.ext(f))
+      yield f
+
+    def README(contents: String)(using sp: SourcePos): StateT[ErrorF, List[FileDef], FileDef] =
+      for
+        f <- StateT.pure[ErrorF, List[FileDef], FileDef](FileDef.ReadMe(Path.of("README.md"), contents))
+        _ <- StateT.modifyF[ErrorF, List[FileDef]](ctx => ctx.ext(f))
+      yield f
+
     def SRC[A](packages: StateT[ErrorF, List[File], A])(using sp: SourcePos): StateT[ErrorF, List[FileDef], FileDef] =
       for
         s <- StateT.liftF[ErrorF, List[FileDef], List[File]](packages.runEmptyS)

@@ -4,7 +4,7 @@ import cats.data.StateT
 import dc10.compile.{Compiler, Renderer, VirtualFile}
 import dc10.sbt.ast.{FileDef, ProjectDef}
 import dc10.scala.{Error, ErrorF, Statement}
-import dc10.scala.version.`3.3.1`
+import dc10.scala.version.`3.4.0`
 
 implicit object compiler extends Compiler[
   ErrorF,
@@ -40,12 +40,14 @@ implicit object compiler extends Compiler[
         fds <- res
       yield fds.flatMap(f =>
         f match
+          case FileDef.License(path, contents) =>
+            List(VirtualFile(path, contents))
           case FileDef.ReadMe(path, contents) =>
-            ???
+            List(VirtualFile(path, contents))
           case FileDef.SbtFile(path, contents) =>
             List(VirtualFile(path, R.render(contents)))
           case FileDef.SourceDir(contents) =>
-            val S: Renderer["scala-3.3.1", Error, List[Statement]] =
-              summon[Renderer["scala-3.3.1", Error, List[Statement]]]
+            val S: Renderer["scala-3.4.0", Error, List[Statement]] =
+              summon[Renderer["scala-3.4.0", Error, List[Statement]]]
             contents.map(c => VirtualFile(c.path, S.render(c.contents)))
       )

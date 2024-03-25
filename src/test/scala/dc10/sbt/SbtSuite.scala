@@ -6,7 +6,7 @@ class SbtSuite extends FunSuite:
   
   import dc10.sbt.compiler
   import dc10.sbt.dsl.*
-  import dc10.sbt.version.`1.9.7`
+  import dc10.sbt.version.`1.9.9`
   import dc10.scala.dsl.{*, given}
   import scala.language.implicitConversions
   
@@ -23,14 +23,14 @@ class SbtSuite extends FunSuite:
 
     val ast =
       BASEDIR("dc10-example",
-        for 
+        for
           s <- SRC(PACKAGE("example", `Main.scala`))
           _ <- BUILDSBT(ROOT("dc10-example", s))
         yield ()
       )
     
     val obtained: List[String] =
-      ast.compile.toVirtualFile["sbt-1.9.7"].fold(_ => Nil, l => l.map(f => f.contents))
+      ast.compile.toVirtualFile["sbt-1.9.9"].fold(_ => Nil, l => l.map(f => f.contents))
       
     val expected: List[String] =
       scala.List(
@@ -39,7 +39,7 @@ class SbtSuite extends FunSuite:
           |val hello: String = "hello, world"""".stripMargin,
         """val CatsEffectV = "3.5.2"
           |
-          |ThisBuild / scalaVersion := "3.3.1"
+          |ThisBuild / scalaVersion := "3.4.0"
           |ThisBuild / version := "0.1.0-SNAPSHOT"
           |
           |lazy val root = (project in file(".")).settings(
