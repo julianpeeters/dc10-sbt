@@ -1,11 +1,11 @@
 # dc10-sbt
 
 Library for use with the `dc10-scala` code generator.
- - Library for Scala 3 (JVM only)
- - Generates code for Scala 3
+ - Library for Scala 3.4+ (JS, JVM, and Native platforms)
+ - Generates code for Scala 3.4+
 
 ```scala
-"com.julianpeeters" %% "dc10-sbt" % "0.1.0"
+"com.julianpeeters" %% "dc10-sbt" % "0.2.0"
 ```
 
 ### `dc10-sbt`
@@ -20,7 +20,7 @@ val `Main.scala` =
   FILE("Main.scala",
     VAL("hello", STRING, "hello, world")
   )
-// `Main.scala`: IndexedStateT[ErrorF, List[File], List[File], ValueExpr[String, Unit]] = cats.data.IndexedStateT@15b3cd8f
+// `Main.scala`: IndexedStateT[ErrorF, List[File], List[File], ValueExpr[String, Unit]] = cats.data.IndexedStateT@15adbe0c
 
 val snippet = 
   BASEDIR("dc10-example",
@@ -29,24 +29,24 @@ val snippet =
       _ <- BUILDSBT(ROOT("dc10-example", s))
     yield ()
   )
-// snippet: IndexedStateT[ErrorF, List[FileDef], List[FileDef], Unit] = cats.data.IndexedStateT@2b43fb00
+// snippet: IndexedStateT[ErrorF, List[FileDef], List[FileDef], Unit] = cats.data.IndexedStateT@4b8bd912
 ```
 
 Use the `compiler` to render the code:
 
 ```scala
 import dc10.sbt.compiler.{compile, toVirtualFile}
-import dc10.sbt.version.`1.9.7`
+import dc10.sbt.version.`1.9.9`
 
 val result: List[String] =
-  snippet.compile.toVirtualFile["sbt-1.9.7"].fold(_ => Nil, l => l.map(f => f.contents))
+  snippet.compile.toVirtualFile["sbt-1.9.9"].fold(_ => Nil, l => l.map(f => f.contents))
 // result: List[String] = List(
 //   """package example
 // 
 // val hello: String = "hello, world"""",
 //   """val CatsEffectV = "3.5.2"
 // 
-// ThisBuild / scalaVersion := "3.3.1"
+// ThisBuild / scalaVersion := "3.4.0"
 // ThisBuild / version := "0.1.0-SNAPSHOT"
 // 
 // lazy val root = (project in file(".")).settings(

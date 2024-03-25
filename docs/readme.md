@@ -1,7 +1,7 @@
 # dc10-sbt
 
 Library for use with the `dc10-scala` code generator.
- - Library for Scala @SCALA@ (JVM only)
+ - Library for Scala @SCALA@ (JS, JVM, and Native platforms)
  - Generates code for Scala @SCALA@
 
 ```scala
@@ -34,8 +34,8 @@ Use the `compiler` to render the code:
 
 ```scala mdoc
 import dc10.sbt.compiler.{compile, toVirtualFile}
-import dc10.sbt.version.`1.9.7`
+import dc10.sbt.version.`1.9.9`
 
 val result: List[String] =
-  snippet.compile.toVirtualFile["sbt-1.9.7"].fold(_ => Nil, l => l.map(f => f.contents))
+  snippet.compile.toVirtualFile["sbt-1.9.9"].fold(_ => Nil, l => l.map(f => f.contents))
 ```
