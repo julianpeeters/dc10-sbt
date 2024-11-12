@@ -1,9 +1,9 @@
 package dc10.sbt
 
-import dc10.sbt.predef.{Build, Project}
+import dc10.sbt.predef.file.Files
 
 trait dsl
 
 object dsl extends dsl
-  with Build.Mixins
+  with Files.Mixins
   with Project.Mixins
