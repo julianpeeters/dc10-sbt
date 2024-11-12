@@ -1,37 +1,58 @@
-package dc10.sbt.predef
+package dc10.sbt
 
 import cats.data.StateT
-import dc10.sbt.ast.{FileDef, ProjectDef, Symbol}
-import dc10.sbt.ctx.ext
-import dc10.scala.ErrorF
-import org.tpolecat.sourcepos.SourcePos
+import cats.syntax.all.given
+import dc10.File
+import dc10.sbt.compiler
+import dc10.sbt.Statement.ProjectDef
+import dc10.sbt.Symbol.Build.SourceDir
+import dc10.scala.{ErrorF, LibDep}
 
 trait Project[F[_], G[_]]:
-  def PROJECT[A](nme: String, packages: G[A])(using sp: SourcePos): F[A]
-  def ROOT[A](nme: String, source: FileDef)(using sp: SourcePos): F[Unit]
+  def CROSSPROJECT[A](nme: String, src: SourceDir): F[Symbol.Project]
+  def PROJECT[A](nme: String, src: SourceDir): F[Symbol.Project]
+  def ROOT[A](nme: String, src: SourceDir): F[Unit]
     
 object Project:
 
+  val scalaJsCross: LibDep     = LibDep("org.portable-scala", "sbt-scalajs-crossproject",      "1.3.2")
+  val scalaNativeCross: LibDep = LibDep("org.portable-scala", "sbt-scala-native-crossproject", "1.3.2")
+  val scalaJs: LibDep          = LibDep("org.scala-js",       "sbt-scalajs",                   "1.17.0")
+  val scalaNative: LibDep      = LibDep("org.scala-native",   "sbt-scala-native",              "0.5.5")
+
   trait Mixins extends Project[
-    [A] =>> StateT[ErrorF, List[ProjectDef], A],
-    [A] =>> StateT[ErrorF, List[FileDef], A]
+    StateT[ErrorF, (Set[LibDep], List[dc10.sbt.Statement]), _],
+    StateT[ErrorF, (Set[LibDep], List[File[dc10.scala.Statement]]), _],
   ]:
     
+    def CROSSPROJECT[A](
+      nme: String,
+      src: SourceDir
+    ): StateT[ErrorF, (Set[LibDep], List[dc10.sbt.Statement]), Symbol.Project] =
+      for
+        p <- StateT.pure(Symbol.Project.CrossProject(nme, src))
+        d <- StateT.pure[ErrorF, (Set[LibDep], List[dc10.sbt.Statement]), ProjectDef](ProjectDef(p))
+        _ <- List(scalaJsCross, scalaNativeCross, scalaJs, scalaNative).toList.traverse(l =>
+          StateT.modifyF[ErrorF, (Set[LibDep], List[dc10.sbt.Statement])](ctx => ctx.dep(l)))
+        _ <- StateT.modifyF[ErrorF, (Set[LibDep], List[dc10.sbt.Statement])](ctx => ctx.ext(d))
+      yield p
+      
     def PROJECT[A](
       nme: String,
-      packages: StateT[ErrorF, List[FileDef], A]
-    )(using sp: SourcePos): StateT[ErrorF, List[ProjectDef], A] =
+      src: SourceDir
+    ): StateT[ErrorF, (Set[LibDep], List[dc10.sbt.Statement]), Symbol.Project] =
       for
-        (ms, a) <- StateT.liftF[ErrorF, List[ProjectDef], (List[FileDef], A)](packages.runEmpty)
-        d <- StateT.pure[ErrorF, List[ProjectDef], ProjectDef](
-          ProjectDef(Symbol.Project.SubProject(nme, ms), sp))
-        _ <- StateT.modifyF[ErrorF, List[ProjectDef]](ctx => ctx.ext(d))
-      yield a
+        p <- StateT.pure(Symbol.Project.SubProject(nme, src))
+        d <- StateT.pure[ErrorF, (Set[LibDep], List[dc10.sbt.Statement]), ProjectDef](ProjectDef(p))
+        _ <- src.deps.toList.traverse(l => StateT.modifyF[ErrorF, (Set[LibDep], List[dc10.sbt.Statement])](ctx => ctx.dep(l)))
+        _ <- StateT.modifyF[ErrorF, (Set[LibDep], List[dc10.sbt.Statement])](ctx => ctx.ext(d))
+      yield p
       
-    def ROOT[A](nme: String, source: FileDef)(using sp: SourcePos): StateT[ErrorF, List[ProjectDef], Unit] =
+    def ROOT[A](
+      nme: String,
+      src: SourceDir
+    ): StateT[ErrorF, (Set[LibDep], List[dc10.sbt.Statement]), Unit] =
       for
-        s <- StateT.pure[ErrorF, List[ProjectDef], FileDef](source)
-        d <- StateT.pure[ErrorF, List[ProjectDef], ProjectDef](
-          ProjectDef(Symbol.Project.Root(nme, Nil, List(s)), sp))
-        _ <- StateT.modifyF[ErrorF, List[ProjectDef]](ctx => ctx.ext(d))
+        d <- StateT.pure[ErrorF, (Set[LibDep], List[dc10.sbt.Statement]), ProjectDef](ProjectDef(Symbol.Project.Root(nme, Nil, src)))
+        _ <- StateT.modifyF[ErrorF, (Set[LibDep], List[dc10.sbt.Statement])](ctx => ctx.ext(d))
       yield ()

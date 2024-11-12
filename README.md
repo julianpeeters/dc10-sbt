@@ -29,17 +29,17 @@ val snippet =
       _ <- BUILDSBT(ROOT("dc10-example", s))
     yield ()
   )
-// snippet: IndexedStateT[ErrorF, List[FileDef], List[FileDef], Unit] = cats.data.IndexedStateT@4b8bd912
+// snippet: IndexedStateT[ErrorF, List[BuildFile], List[BuildFile], Unit] = cats.data.IndexedStateT@4b8bd912
 ```
 
 Use the `compiler` to render the code:
 
 ```scala
 import dc10.sbt.compiler.{compile, toVirtualFile}
-import dc10.sbt.version.`1.9.9`
+import dc10.sbt.version.`1.10.5`
 
 val result: List[String] =
-  snippet.compile.toVirtualFile["sbt-1.9.9"].fold(_ => Nil, l => l.map(f => f.contents))
+  snippet.compile.toVirtualFile["sbt-1.10.5"].fold(_ => Nil, l => l.map(f => f.contents))
 // result: List[String] = List(
 //   """package example
 // 

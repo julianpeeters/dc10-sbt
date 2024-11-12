@@ -34,8 +34,8 @@ Use the `compiler` to render the code:
 
 ```scala mdoc
 import dc10.sbt.compiler.{compile, toVirtualFile}
-import dc10.sbt.version.`1.9.9`
+import dc10.sbt.version.`1.10.5`
 
 val result: List[String] =
-  snippet.compile.toVirtualFile["sbt-1.9.9"].fold(_ => Nil, l => l.map(f => f.contents))
+  snippet.compile.toVirtualFile["sbt-1.10.5"].fold(_ => Nil, l => l.map(f => f.contents))
 ```

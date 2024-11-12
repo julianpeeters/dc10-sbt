@@ -1,8 +1,6 @@
-val CatsV = "2.10.0"
-val Dc10ScalaV = "0.7.1"
-val Fs2V = "3.7.0"
-val MUnitV = "0.7.29"
-val SourcePosV = "1.1.0"
+val Dc10ScalaV = "0.8.0"
+val Fs2V = "3.11.0"
+val MUnitV = "1.0.2"
 
 inThisBuild(List(
   crossScalaVersions := Seq(scalaVersion.value),
@@ -22,22 +20,19 @@ inThisBuild(List(
     "-deprecation",
     "-feature",
     "-Werror",
-    "-source:future",
     "-Wunused:all",
-    "-Wvalue-discard"
+    "-Xkind-projector:underscores"
   ),
-  scalaVersion := "3.4.0",
+  scalaVersion := "3.5.2",
   versionScheme := Some("semver-spec"),
 ))
 
 lazy val `dc10-sbt` = crossProject(JSPlatform, JVMPlatform, NativePlatform)
-   .in(file("modules"))
+  .in(file("modules"))
   .settings(
     name := "dc10-sbt",
     libraryDependencies ++= Seq(
       "com.julianpeeters" %%% "dc10-scala" % Dc10ScalaV,
-      "org.tpolecat"      %%% "sourcepos"  % SourcePosV,
-      "org.typelevel"     %%% "cats-core"  % CatsV,
       "org.scalameta"      %% "munit"      % MUnitV      % Test
     )
   )
