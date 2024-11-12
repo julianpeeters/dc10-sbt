@@ -35,8 +35,10 @@ object Files:
       for
         ((ds, ms)) <- StateT.liftF[ErrorF, (Set[LibDep], List[File[dc10.sbt.Statement]]), ((Set[LibDep], List[File[dc10.sbt.Statement]]))](files.runEmptyS)
         d = ds.map(d => dc10.sbt.Statement.ProjectDef(AddSbtPlugin(d)))
-        f <- StateT.pure[ErrorF, (Set[LibDep], List[File[dc10.sbt.Statement]]), File[dc10.sbt.Statement]](File(Path.of(s"project/plugins.sbt"), d.toList).addParent(Path.of(nme)))
-        c <- StateT.pure[ErrorF, (Set[LibDep], List[File[dc10.sbt.Statement]]), List[File[dc10.sbt.Statement]]]((ms).map(f => f.addParent(Path.of(nme))):+f)
+        p <- StateT.pure[ErrorF, (Set[LibDep], List[File[dc10.sbt.Statement]]), File[dc10.sbt.Statement]](File(Path.of(s"project/plugins.sbt"), d.toList).addParent(Path.of(nme)))
+        c <- if ds.isEmpty
+          then StateT.pure[ErrorF, (Set[LibDep], List[File[dc10.sbt.Statement]]), List[File[dc10.sbt.Statement]]]((ms).map(f => f.addParent(Path.of(nme))))
+          else StateT.pure[ErrorF, (Set[LibDep], List[File[dc10.sbt.Statement]]), List[File[dc10.sbt.Statement]]]((ms).map(f => f.addParent(Path.of(nme))):+p)
         _ <- c.traverse(f => StateT.modifyF[ErrorF, (Set[LibDep], List[File[dc10.sbt.Statement]])](ctx => ctx.ext(f)))
       yield ()
 
@@ -50,7 +52,7 @@ object Files:
             case AddSbtPlugin(libDep) => StateT.pure[ErrorF, (Set[LibDep], List[File[dc10.sbt.Statement]]), List[Unit]]((List()))  
             case CrossProject(nme, src) => src.files.traverse(p => StateT.modifyF[ErrorF, (Set[LibDep], List[File[dc10.sbt.Statement]])](ctx => ctx.ext(File(Path.of("shared", "src", "main", "scala").resolve(p.path), p.contents.map(dc10.sbt.Statement.ScalaStatement.apply)))))
             case Root(nme, agg, src) => src.files.traverse(p => StateT.modifyF[ErrorF, (Set[LibDep], List[File[dc10.sbt.Statement]])](ctx => ctx.ext(File(Path.of("src", "main", "scala").resolve(p.path), p.contents.map(dc10.sbt.Statement.ScalaStatement.apply)))))
-            case SubProject(nme, src) =>src.files.traverse(p => StateT.modifyF[ErrorF, (Set[LibDep], List[File[dc10.sbt.Statement]])](ctx => ctx.ext(File(Path.of("src", "main", "scala").resolve(p.path), p.contents.map(dc10.sbt.Statement.ScalaStatement.apply)))))
+            case SubProject(nme, src) => src.files.traverse(p => StateT.modifyF[ErrorF, (Set[LibDep], List[File[dc10.sbt.Statement]])](ctx => ctx.ext(File(Path.of("src", "main", "scala").resolve(p.path), p.contents.map(dc10.sbt.Statement.ScalaStatement.apply)))))
           case Statement.LicenseStatement(s) => StateT.pure[ErrorF, (Set[LibDep], List[File[dc10.sbt.Statement]]), List[Unit]]((List()))
           case Statement.GitignoreStatement(s) => StateT.pure[ErrorF, (Set[LibDep], List[File[dc10.sbt.Statement]]), List[Unit]]((List()))
           case Statement.ReadmeStatement(s) => StateT.pure[ErrorF, (Set[LibDep], List[File[dc10.sbt.Statement]]), List[Unit]]((List()))
